@@ -10,37 +10,70 @@ class ProductCard extends StatelessWidget {
   const ProductCard({
     super.key,
     required this.product,
+    this.onTap,
   });
 
   final ProductSummaryView product;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(16),
-      onTap: () => context.push('/product/${product.id}'),
+      onTap: onTap ?? () => context.push('/product/${product.id}'),
       child: SectionCard(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            AspectRatio(
-              aspectRatio: 1.05,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: AppColors.mist,
-                  borderRadius: BorderRadius.circular(16),
+            Stack(
+              children: <Widget>[
+                AspectRatio(
+                  aspectRatio: 1.05,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.mist,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: product.thumbnail == null
+                        ? const Icon(Icons.photo_outlined, size: 36, color: AppColors.accent)
+                        : ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.network(
+                              product.thumbnail!.url,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                  ),
                 ),
-                child: product.thumbnail == null
-                    ? const Icon(Icons.photo_outlined, size: 36, color: AppColors.cedar)
-                    : ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.network(
-                          product.thumbnail!.url,
-                          fit: BoxFit.cover,
-                        ),
+                PositionedDirectional(
+                  top: AppSpacing.sm,
+                  end: AppSpacing.sm,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: product.stockStatus == 'out_of_stock'
+                          ? AppColors.surface.withValues(alpha: 0.94)
+                          : AppColors.accentSoft.withValues(alpha: 0.94),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xs,
                       ),
-              ),
+                      child: Text(
+                        product.stockStatus == 'out_of_stock' ? 'نفد حاليًا' : 'جاهز للشحن',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              fontSize: 12,
+                              color: product.stockStatus == 'out_of_stock'
+                                  ? AppColors.danger
+                                  : AppColors.success,
+                            ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
@@ -57,7 +90,7 @@ class ProductCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
-            ],
+            ),
             const Spacer(),
             const SizedBox(height: AppSpacing.md),
             Text(
