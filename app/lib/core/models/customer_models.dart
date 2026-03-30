@@ -76,6 +76,30 @@ class OrderSummaryView {
   final MoneyView grandTotal;
 }
 
+class OrdersPageMeta {
+  const OrdersPageMeta({
+    required this.page,
+    required this.pageSize,
+    required this.totalItems,
+    required this.totalPages,
+  });
+
+  final int page;
+  final int pageSize;
+  final int totalItems;
+  final int totalPages;
+}
+
+class OrdersListingView {
+  const OrdersListingView({
+    required this.items,
+    required this.meta,
+  });
+
+  final List<OrderSummaryView> items;
+  final OrdersPageMeta meta;
+}
+
 class OrderDetailView extends OrderSummaryView {
   const OrderDetailView({
     required super.orderNumber,

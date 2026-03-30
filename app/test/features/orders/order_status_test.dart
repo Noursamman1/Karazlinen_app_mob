@@ -6,7 +6,8 @@ void main() {
   test('demo orders expose normalized status labels', () async {
     const DemoAccountRepository repository = DemoAccountRepository();
     final orders = await repository.fetchOrders();
-    expect(orders.first.statusLabel, isNotEmpty);
-    expect(orders.first.statusCode, isNotEmpty);
+    expect(orders.items.first.statusLabel, isNotEmpty);
+    expect(orders.items.first.statusCode, isNotEmpty);
+    expect(orders.meta.totalItems, greaterThan(0));
   });
 }

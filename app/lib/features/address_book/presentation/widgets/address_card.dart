@@ -9,9 +9,11 @@ class AddressCard extends StatelessWidget {
   const AddressCard({
     super.key,
     required this.address,
+    this.onEdit,
   });
 
   final AddressView address;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +43,17 @@ class AddressCard extends StatelessWidget {
           Text(address.postcode),
           const SizedBox(height: AppSpacing.xs),
           Text(address.phone),
+          if (onEdit != null) ...<Widget>[
+            const SizedBox(height: AppSpacing.md),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: OutlinedButton.icon(
+                onPressed: onEdit,
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('تعديل العنوان'),
+              ),
+            ),
+          ],
         ],
       ),
     );

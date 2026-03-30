@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:karaz_linen_app/app/presentation/auth_required_page.dart';
 import 'package:karaz_linen_app/app/screens/home_page.dart';
 import 'package:karaz_linen_app/core/di/service_locator.dart';
+import 'package:karaz_linen_app/core/models/customer_models.dart';
 import 'package:karaz_linen_app/core/session/session_state.dart';
 import 'package:karaz_linen_app/features/account/presentation/pages/account_overview_page.dart';
 import 'package:karaz_linen_app/features/address_book/presentation/pages/address_book_page.dart';
@@ -57,7 +58,9 @@ class AppRouter {
             GoRoute(
               path: '/account/addresses/new',
               name: 'address-new',
-              builder: (_, __) => const AddressFormPage(),
+              builder: (_, GoRouterState state) => AddressFormPage(
+                initialAddress: state.extra is AddressView ? state.extra! as AddressView : null,
+              ),
             ),
             GoRoute(
               path: '/account/orders',

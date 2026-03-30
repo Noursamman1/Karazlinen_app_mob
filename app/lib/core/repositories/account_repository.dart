@@ -4,7 +4,7 @@ import 'package:karaz_linen_app/core/models/customer_models.dart';
 abstract class AccountRepository {
   Future<ProfileView> fetchProfile();
   Future<List<AddressView>> fetchAddresses();
-  Future<List<OrderSummaryView>> fetchOrders();
+  Future<OrdersListingView> fetchOrders();
   Future<OrderDetailView> fetchOrderDetail(String orderNumber);
 }
 
@@ -58,8 +58,8 @@ class DemoAccountRepository implements AccountRepository {
   }
 
   @override
-  Future<List<OrderSummaryView>> fetchOrders() async {
-    return <OrderSummaryView>[
+  Future<OrdersListingView> fetchOrders() async {
+    final List<OrderSummaryView> items = <OrderSummaryView>[
       OrderSummaryView(
         orderNumber: '100000241',
         placedAt: DateTime(2026, 3, 10),
@@ -75,6 +75,16 @@ class DemoAccountRepository implements AccountRepository {
         grandTotal: MoneyView(amount: 520, currencyCode: 'SAR', formatted: '520 ر.س'),
       ),
     ];
+
+    return OrdersListingView(
+      items: items,
+      meta: OrdersPageMeta(
+        page: 1,
+        pageSize: 10,
+        totalItems: items.length,
+        totalPages: 1,
+      ),
+    );
   }
 
   @override
