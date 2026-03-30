@@ -84,6 +84,50 @@ class ConfigurableOptionView {
   final List<ConfigurableValueView> values;
 }
 
+class ResolvedVariantCombinationView {
+  const ResolvedVariantCombinationView({
+    required this.selection,
+    required this.resolvedSku,
+    required this.availability,
+    required this.price,
+    this.image,
+  });
+
+  final Map<String, String> selection;
+  final String resolvedSku;
+  final String availability;
+  final ImageView? image;
+  final MoneyView price;
+
+  bool matchesSelection(Map<String, String> selectedValues) {
+    if (selection.length != selectedValues.length) {
+      return false;
+    }
+
+    for (final MapEntry<String, String> entry in selection.entries) {
+      if (selectedValues[entry.key] != entry.value) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+}
+
+class VariantResolutionView {
+  const VariantResolutionView({
+    required this.mode,
+    this.combinations = const <ResolvedVariantCombinationView>[],
+    this.unresolvedReason,
+  });
+
+  final String mode;
+  final List<ResolvedVariantCombinationView> combinations;
+  final String? unresolvedReason;
+
+  bool get hasResolvedCombinations => mode == 'resolved_combinations' && combinations.isNotEmpty;
+}
+
 class ProductDetailView extends ProductSummaryView {
   const ProductDetailView({
     required super.id,
@@ -94,6 +138,7 @@ class ProductDetailView extends ProductSummaryView {
     required super.stockStatus,
     required this.gallery,
     required this.configurableOptions,
+    required this.variantResolution,
     super.subtitle,
     super.thumbnail,
     super.compareAtPrice,
@@ -103,4 +148,5 @@ class ProductDetailView extends ProductSummaryView {
   final List<ImageView> gallery;
   final String? description;
   final List<ConfigurableOptionView> configurableOptions;
+  final VariantResolutionView variantResolution;
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:karaz_linen_app/core/models/commerce_models.dart';
-import 'package:karaz_linen_app/features/catalog/application/catalog_controllers.dart';
+import 'package:karaz_linen_app/features/catalog/application/catalog_controller.dart';
 
 class CategoryChipStrip extends ConsumerWidget {
   const CategoryChipStrip({
@@ -18,20 +18,26 @@ class CategoryChipStrip extends ConsumerWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: categories
-            .map(
-              (CategoryView category) => Padding(
-                padding: const EdgeInsetsDirectional.only(end: 8),
-                child: ChoiceChip(
-                  label: Text(category.name),
-                  selected: selectedCategory == category.id,
-                  onSelected: (_) {
-                    ref.read(catalogFilterProvider.notifier).state = ref.read(catalogFilterProvider).copyWith(categoryId: category.id);
-                  },
-                ),
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 8),
+            child: ChoiceChip(
+              label: const Text('الكل'),
+              selected: selectedCategory == null,
+              onSelected: (_) => updateCatalogCategory(ref, null),
+            ),
+          ),
+          ...categories.map(
+            (CategoryView category) => Padding(
+              padding: const EdgeInsetsDirectional.only(end: 8),
+              child: ChoiceChip(
+                label: Text(category.name),
+                selected: selectedCategory == category.id,
+                onSelected: (_) => updateCatalogCategory(ref, category.id),
               ),
-            )
-            .toList(growable: false),
+            ),
+          ),
+        ],
       ),
     );
   }

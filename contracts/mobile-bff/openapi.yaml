@@ -96,9 +96,25 @@ paths:
       summary: Fetch paginated product listing
       parameters:
         - in: query
+          name: query
+          schema:
+            type: string
+          description: Full-text search query for product name, subtitle, or indexed search fields.
+        - in: query
           name: categoryId
           schema:
             type: string
+        - in: query
+          name: filters
+          style: deepObject
+          explode: true
+          schema:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                type: string
+          description: Facet selections keyed by facet code, for example `filters[material]=قطن`.
         - in: query
           name: page
           schema:
@@ -110,22 +126,14 @@ paths:
         - in: query
           name: sort
           schema:
-            type: string
+            $ref: '#/components/schemas/CatalogSortOption'
       responses:
         '200':
           description: Product listing
           content:
             application/json:
               schema:
-                type: object
-                required: [items, meta]
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ProductSummary'
-                  meta:
-                    $ref: './schemas/common.yaml#/components/schemas/PaginationMeta'
+                $ref: '#/components/schemas/ProductListingResponse'
   /v1/catalog/products/{productId}:
     get:
       summary: Fetch product detail
@@ -336,13 +344,26 @@ components:
         compareAtPrice:
           $ref: './schemas/common.yaml#/components/schemas/Money'
         stockStatus:
-          type: string
-          enum: [in_stock, low_stock, out_of_stock]
+          $ref: '#/components/schemas/StockStatus'
+    ProductListingResponse:
+      type: object
+      required: [items, meta, aggregations]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSummary'
+        meta:
+          $ref: './schemas/common.yaml#/components/schemas/PaginationMeta'
+        aggregations:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacetAggregation'
     ProductDetail:
       allOf:
         - $ref: '#/components/schemas/ProductSummary'
         - type: object
-          required: [gallery, configurableOptions]
+          required: [gallery, configurableOptions, variantResolution]
           properties:
             gallery:
               type: array
@@ -355,6 +376,36 @@ components:
               type: array
               items:
                 $ref: '#/components/schemas/ConfigurableOption'
+            variantResolution:
+              $ref: '#/components/schemas/VariantResolution'
+    CatalogSortOption:
+      type: string
+      enum: [featured, price_asc, price_desc]
+    StockStatus:
+      type: string
+      enum: [in_stock, low_stock, out_of_stock]
+    FacetAggregation:
+      type: object
+      required: [code, label, values]
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacetAggregationValue'
+    FacetAggregationValue:
+      type: object
+      required: [value, label, count]
+      properties:
+        value:
+          type: string
+        label:
+          type: string
+        count:
+          type: integer
     ConfigurableOption:
       type: object
       required: [code, label, values]
@@ -375,6 +426,36 @@ components:
                 type: string
               available:
                 type: boolean
+    VariantResolution:
+      type: object
+      required: [mode, combinations]
+      properties:
+        mode:
+          type: string
+          enum: [base_product, resolved_combinations]
+        combinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConfigurableVariantCombination'
+        unresolvedReason:
+          type: string
+          nullable: true
+    ConfigurableVariantCombination:
+      type: object
+      required: [selection, resolvedSku, availability, price]
+      properties:
+        selection:
+          type: object
+          additionalProperties:
+            type: string
+        resolvedSku:
+          type: string
+        availability:
+          $ref: '#/components/schemas/StockStatus'
+        image:
+          $ref: './schemas/common.yaml#/components/schemas/Image'
+        price:
+          $ref: './schemas/common.yaml#/components/schemas/Money'
     Profile:
       type: object
       required: [customerId, firstName, lastName, email]

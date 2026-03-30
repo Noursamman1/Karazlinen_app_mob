@@ -12,4 +12,4 @@ This directory contains the canonical public contract between the Flutter mobile
 
 ## Scope
 
-This foundation covers authentication, session bootstrap, catalog browse, search, account summary, address management, and order retrieval.
+This foundation covers authentication, session bootstrap, catalog browse, search, facet aggregations, configurable product variant resolution, account summary, address management, and order retrieval.
