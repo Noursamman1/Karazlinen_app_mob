@@ -1,7 +1,7 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsUUID } from 'class-validator';
 
 export class LogoutRequestDto {
   @IsOptional()
-  @IsString()
+  @IsUUID()
   sessionId?: string;
 }

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { LoggerModule } from '../../common/logger/logger.module';
 import { MagentoClient } from './magento.client';
 import { MagentoConfig } from './magento.config';
 import { CustomerAuthPort } from './ports/customer-auth.port';
@@ -8,6 +9,7 @@ import { OrderReadPort } from './ports/order-read.port';
 import { SearchPort } from '../search/search.port';
 
 @Module({
+  imports: [LoggerModule],
   providers: [
     MagentoConfig,
     MagentoClient,
