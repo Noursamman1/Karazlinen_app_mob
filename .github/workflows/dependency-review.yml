@@ -11,4 +11,29 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/dependency-review-action@v4
+      - name: Detect security capability flags
+        id: security-capabilities
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          RESPONSE="$(curl -fsSL \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}")"
+
+          DEP_GRAPH_STATUS="$(echo "${RESPONSE}" | jq -r '.security_and_analysis.dependency_graph.status // "disabled"')"
+          GHAS_STATUS="$(echo "${RESPONSE}" | jq -r '.security_and_analysis.advanced_security.status // "disabled"')"
+
+          echo "dependency_graph_status=${DEP_GRAPH_STATUS}" >> "${GITHUB_OUTPUT}"
+          echo "ghas_status=${GHAS_STATUS}" >> "${GITHUB_OUTPUT}"
+
+      - name: Run dependency review
+        if: ${{ steps.security-capabilities.outputs.dependency_graph_status == 'enabled' && steps.security-capabilities.outputs.ghas_status == 'enabled' }}
+        uses: actions/dependency-review-action@v4
+
+      - name: Skip dependency review when repository features are unavailable
+        if: ${{ !(steps.security-capabilities.outputs.dependency_graph_status == 'enabled' && steps.security-capabilities.outputs.ghas_status == 'enabled') }}
+        run: |
+          echo "::notice::Dependency review skipped because Dependency graph and/or GitHub Advanced Security is not enabled for this repository."
+          echo "::notice::Enable both features in Settings -> Security & analysis to enforce this check."
