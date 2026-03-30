@@ -1,0 +1,26 @@
+name: PR Checks
+
+on:
+  pull_request:
+
+jobs:
+  guardrails:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/ci-bootstrap.sh
+      - run: ./scripts/check-no-secrets.sh
+      - run: ./scripts/check-changed-scopes.sh
+      - run: ./scripts/validate-docs.sh
+
+  flutter-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/validate-flutter.sh
+
+  bff-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/validate-bff.sh

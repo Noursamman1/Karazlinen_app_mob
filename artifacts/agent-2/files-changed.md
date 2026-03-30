@@ -1,0 +1,27 @@
+# Agent 2 Files Changed
+
+- app/pubspec.yaml
+- app/analysis_options.yaml
+- app/lib/main.dart
+- app/lib/app/bootstrap.dart
+- app/lib/app/karaz_app.dart
+- app/lib/app/router/app_router.dart
+- app/lib/app/screens/home_page.dart
+- app/lib/core/config/app_config.dart
+- app/lib/core/di/service_locator.dart
+- app/lib/core/logging/app_logger.dart
+- app/lib/core/network/api_result.dart
+- app/lib/core/network/http_client.dart
+- app/lib/core/i18n/app_localizations.dart
+- app/lib/core/auth/session_state.dart
+- app/lib/core/auth/session_controller.dart
+- app/lib/core/models/ui_state.dart
+- app/lib/core/widgets/state_widgets.dart
+- app/lib/design_system/theme/app_colors.dart
+- app/lib/design_system/theme/app_spacing.dart
+- app/lib/design_system/theme/app_typography.dart
+- app/lib/design_system/theme/app_theme.dart
+- app/lib/design_system/widgets/app_surface_card.dart
+- app/test/app/bootstrap_test.dart
+- app/test/design_system/theme_test.dart
+- app/test/core/api_result_test.dart

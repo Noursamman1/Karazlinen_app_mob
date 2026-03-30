@@ -1,0 +1,15 @@
+filters:
+  docs:
+    - 'docs/**'
+    - 'contracts/**'
+    - 'adr/**'
+  flutter:
+    - 'app/**'
+  bff:
+    - 'bff/**'
+    - 'infra/bff/**'
+    - 'docs/bff/**'
+  ci:
+    - '.github/**'
+    - 'ci/**'
+    - 'scripts/**'

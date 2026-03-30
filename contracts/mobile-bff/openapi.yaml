@@ -1,0 +1,488 @@
+openapi: 3.1.0
+info:
+  title: Karaz Linen Mobile BFF API
+  version: 1.0.0
+  description: Canonical contract between the Karaz Linen Flutter app and the Mobile BFF.
+servers:
+  - url: https://api.example.com
+paths:
+  /v1/auth/login:
+    post:
+      summary: Authenticate an existing website customer and start a mobile session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/problem+json:
+              schema:
+                $ref: './schemas/common.yaml#/components/schemas/ErrorResponse'
+  /v1/auth/refresh:
+    post:
+      summary: Rotate the current refresh token and issue a new access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Refreshed session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+  /v1/auth/logout:
+    post:
+      summary: Revoke the current mobile session
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Logged out
+  /v1/auth/me:
+    get:
+      summary: Fetch the active session and customer summary
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Active session
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionBootstrap'
+  /v1/catalog/categories:
+    get:
+      summary: Fetch catalog categories
+      responses:
+        '200':
+          description: Category tree
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+  /v1/catalog/products:
+    get:
+      summary: Fetch paginated product listing
+      parameters:
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+        - in: query
+          name: sort
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product listing
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, meta]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProductSummary'
+                  meta:
+                    $ref: './schemas/common.yaml#/components/schemas/PaginationMeta'
+  /v1/catalog/products/{productId}:
+    get:
+      summary: Fetch product detail
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetail'
+  /v1/account/profile:
+    get:
+      summary: Fetch customer profile summary
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profile summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+  /v1/account/addresses:
+    get:
+      summary: Fetch customer addresses
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Address list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Address'
+    post:
+      summary: Create customer address
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressInput'
+      responses:
+        '201':
+          description: Address created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+  /v1/account/addresses/{addressId}:
+    patch:
+      summary: Update customer address
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: addressId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressInput'
+      responses:
+        '200':
+          description: Address updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+    delete:
+      summary: Delete customer address
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: addressId
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Address deleted
+  /v1/orders:
+    get:
+      summary: Fetch customer orders
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, meta]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OrderSummary'
+                  meta:
+                    $ref: './schemas/common.yaml#/components/schemas/PaginationMeta'
+  /v1/orders/{orderNumber}:
+    get:
+      summary: Fetch order detail
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: orderNumber
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetail'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SessionResponse:
+      type: object
+      required: [accessToken, refreshToken, expiresInSeconds]
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresInSeconds:
+          type: integer
+    SessionBootstrap:
+      type: object
+      required: [authenticated, profile]
+      properties:
+        authenticated:
+          type: boolean
+        profile:
+          $ref: '#/components/schemas/Profile'
+    Category:
+      type: object
+      required: [id, name, slug]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        slug:
+          type: string
+        image:
+          $ref: './schemas/common.yaml#/components/schemas/Image'
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    ProductSummary:
+      type: object
+      required: [id, sku, slug, name, price, stockStatus]
+      properties:
+        id:
+          type: string
+        sku:
+          type: string
+        slug:
+          type: string
+        name:
+          type: string
+        subtitle:
+          type: string
+          nullable: true
+        thumbnail:
+          $ref: './schemas/common.yaml#/components/schemas/Image'
+        price:
+          $ref: './schemas/common.yaml#/components/schemas/Money'
+        compareAtPrice:
+          $ref: './schemas/common.yaml#/components/schemas/Money'
+        stockStatus:
+          type: string
+          enum: [in_stock, low_stock, out_of_stock]
+    ProductDetail:
+      allOf:
+        - $ref: '#/components/schemas/ProductSummary'
+        - type: object
+          required: [gallery, configurableOptions]
+          properties:
+            gallery:
+              type: array
+              items:
+                $ref: './schemas/common.yaml#/components/schemas/Image'
+            description:
+              type: string
+              nullable: true
+            configurableOptions:
+              type: array
+              items:
+                $ref: '#/components/schemas/ConfigurableOption'
+    ConfigurableOption:
+      type: object
+      required: [code, label, values]
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        values:
+          type: array
+          items:
+            type: object
+            required: [value, label, available]
+            properties:
+              value:
+                type: string
+              label:
+                type: string
+              available:
+                type: boolean
+    Profile:
+      type: object
+      required: [customerId, firstName, lastName, email]
+      properties:
+        customerId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          nullable: true
+    Address:
+      type: object
+      required: [id, firstName, lastName, phone, country, city, streetLines, postcode, isDefaultBilling, isDefaultShipping]
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        region:
+          type: string
+          nullable: true
+        streetLines:
+          type: array
+          items:
+            type: string
+        postcode:
+          type: string
+        isDefaultBilling:
+          type: boolean
+        isDefaultShipping:
+          type: boolean
+    AddressInput:
+      type: object
+      required: [firstName, lastName, phone, country, city, streetLines, postcode]
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        country:
+          type: string
+        city:
+          type: string
+        region:
+          type: string
+        streetLines:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        postcode:
+          type: string
+        isDefaultBilling:
+          type: boolean
+        isDefaultShipping:
+          type: boolean
+    OrderSummary:
+      type: object
+      required: [orderNumber, placedAt, statusCode, statusLabel, grandTotal]
+      properties:
+        orderNumber:
+          type: string
+        placedAt:
+          type: string
+          format: date-time
+        statusCode:
+          type: string
+        statusLabel:
+          type: string
+        grandTotal:
+          $ref: './schemas/common.yaml#/components/schemas/Money'
+    OrderDetail:
+      allOf:
+        - $ref: '#/components/schemas/OrderSummary'
+        - type: object
+          required: [items]
+          properties:
+            shippingAddress:
+              $ref: '#/components/schemas/Address'
+            billingAddress:
+              $ref: '#/components/schemas/Address'
+            items:
+              type: array
+              items:
+                type: object
+                required: [sku, name, quantity, total]
+                properties:
+                  sku:
+                    type: string
+                  name:
+                    type: string
+                  quantity:
+                    type: integer
+                  total:
+                    $ref: './schemas/common.yaml#/components/schemas/Money'
