@@ -1,0 +1,7 @@
+title = "Karaz Linen gitleaks config"
+
+[allowlist]
+description = "Example values only"
+paths = [
+  '''bff/.env.example'''
+]

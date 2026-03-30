@@ -1,0 +1,25 @@
+# Agent 6 Files Changed
+
+- .github/CODEOWNERS
+- .github/workflows/pr.yml
+- .github/workflows/main.yml
+- .github/workflows/nightly.yml
+- .github/workflows/dependency-review.yml
+- .markdownlint.jsonc
+- .yamllint.yml
+- .gitleaks.toml
+- ci/required-checks.md
+- ci/path-filters.yaml
+- ci/checklists/regression.md
+- ci/checklists/merge-readiness.md
+- docs/qa/test-strategy.md
+- docs/qa/regression-checklist.md
+- docs/qa/merge-readiness.md
+- docs/qa/environments-and-test-data.md
+- scripts/ci-bootstrap.sh
+- scripts/validate-all.sh
+- scripts/validate-flutter.sh
+- scripts/validate-bff.sh
+- scripts/validate-docs.sh
+- scripts/check-no-secrets.sh
+- scripts/check-changed-scopes.sh
