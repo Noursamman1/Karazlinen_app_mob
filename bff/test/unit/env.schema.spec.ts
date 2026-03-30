@@ -11,15 +11,58 @@ describe('env schema', () => {
       ACCESS_TOKEN_PUBLIC_KEY: 'private',
       ACCESS_TOKEN_TTL_SECONDS: '300',
       REFRESH_TOKEN_TTL_DAYS: '30',
+      MAX_ACTIVE_SESSIONS_PER_CUSTOMER: '5',
+      REQUEST_TIMEOUT_MS: '15000',
       REDIS_URL: 'redis://localhost:6379',
       MAGENTO_BASE_URL: 'https://example.com',
       MAGENTO_STORE_CODE: 'default',
       MAGENTO_TIMEOUT_MS: '5000',
       MAGENTO_GRAPHQL_PATH: '/graphql',
       MAGENTO_CUSTOMER_TOKEN_PATH: '/rest/V1/integration/customer/token',
+      MAGENTO_RETRY_ATTEMPTS: '2',
+      MAGENTO_RETRY_BACKOFF_MS: '250',
+      MAGENTO_CIRCUIT_BREAKER_THRESHOLD: '5',
+      MAGENTO_CIRCUIT_BREAKER_RESET_MS: '30000',
       RATE_LIMIT_WINDOW_SECONDS: '60',
-      RATE_LIMIT_MAX_REQUESTS: '120'
+      RATE_LIMIT_MAX_REQUESTS: '120',
+      RATE_LIMIT_AUTH_WINDOW_SECONDS: '60',
+      RATE_LIMIT_AUTH_LOGIN_MAX_REQUESTS: '10',
+      RATE_LIMIT_AUTH_REFRESH_MAX_REQUESTS: '20',
+      RATE_LIMIT_AUTH_ME_MAX_REQUESTS: '60'
     });
     expect(parsed.PORT).toBe(3000);
+  });
+
+  it('rejects placeholder secrets in production', () => {
+    expect(() =>
+      envSchema.parse({
+        APP_NAME: 'karaz',
+        NODE_ENV: 'production',
+        PORT: '3000',
+        LOG_LEVEL: 'info',
+        ACCESS_TOKEN_PRIVATE_KEY: 'replace-me',
+        ACCESS_TOKEN_PUBLIC_KEY: 'replace-me',
+        ACCESS_TOKEN_TTL_SECONDS: '300',
+        REFRESH_TOKEN_TTL_DAYS: '30',
+        MAX_ACTIVE_SESSIONS_PER_CUSTOMER: '5',
+        REQUEST_TIMEOUT_MS: '15000',
+        REDIS_URL: 'redis://localhost:6379',
+        MAGENTO_BASE_URL: 'http://example.com',
+        MAGENTO_STORE_CODE: 'default',
+        MAGENTO_TIMEOUT_MS: '5000',
+        MAGENTO_GRAPHQL_PATH: '/graphql',
+        MAGENTO_CUSTOMER_TOKEN_PATH: '/rest/V1/integration/customer/token',
+        MAGENTO_RETRY_ATTEMPTS: '2',
+        MAGENTO_RETRY_BACKOFF_MS: '250',
+        MAGENTO_CIRCUIT_BREAKER_THRESHOLD: '5',
+        MAGENTO_CIRCUIT_BREAKER_RESET_MS: '30000',
+        RATE_LIMIT_WINDOW_SECONDS: '60',
+        RATE_LIMIT_MAX_REQUESTS: '120',
+        RATE_LIMIT_AUTH_WINDOW_SECONDS: '60',
+        RATE_LIMIT_AUTH_LOGIN_MAX_REQUESTS: '10',
+        RATE_LIMIT_AUTH_REFRESH_MAX_REQUESTS: '20',
+        RATE_LIMIT_AUTH_ME_MAX_REQUESTS: '60'
+      })
+    ).toThrow();
   });
 });

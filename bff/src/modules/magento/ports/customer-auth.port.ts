@@ -6,7 +6,16 @@ export interface MagentoCustomerSummary {
   phone?: string;
 }
 
+export interface MagentoCustomerSessionContext {
+  customerId: string;
+  magentoCustomerToken: string;
+}
+
+export interface MagentoAuthenticationResult extends MagentoCustomerSessionContext {
+  customerEmail: string;
+}
+
 export abstract class CustomerAuthPort {
-  abstract authenticateCustomer(email: string, password: string): Promise<{ customerId: string }>;
-  abstract fetchCustomerSummary(customerId: string): Promise<MagentoCustomerSummary>;
+  abstract authenticateCustomer(email: string, password: string): Promise<MagentoAuthenticationResult>;
+  abstract fetchCustomerSummary(context: MagentoCustomerSessionContext): Promise<MagentoCustomerSummary>;
 }

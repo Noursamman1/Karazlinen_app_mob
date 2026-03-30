@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
 import { MagentoClient } from './magento.client';
-import { CustomerAuthPort, type MagentoCustomerSummary } from './ports/customer-auth.port';
+import {
+  CustomerAuthPort,
+  type MagentoAuthenticationResult,
+  type MagentoCustomerSessionContext,
+  type MagentoCustomerSummary
+} from './ports/customer-auth.port';
 
 @Injectable()
 export class MagentoCustomerAuthService extends CustomerAuthPort {
@@ -9,11 +14,11 @@ export class MagentoCustomerAuthService extends CustomerAuthPort {
     super();
   }
 
-  authenticateCustomer(email: string, password: string): Promise<{ customerId: string }> {
+  authenticateCustomer(email: string, password: string): Promise<MagentoAuthenticationResult> {
     return this.magentoClient.authenticateCustomer(email, password);
   }
 
-  fetchCustomerSummary(customerId: string): Promise<MagentoCustomerSummary> {
-    return this.magentoClient.fetchCustomerSummary(customerId);
+  fetchCustomerSummary(context: MagentoCustomerSessionContext): Promise<MagentoCustomerSummary> {
+    return this.magentoClient.fetchCustomerSummary(context);
   }
 }

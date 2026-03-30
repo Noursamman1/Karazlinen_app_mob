@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 
+import { LoggerModule } from '../../common/logger/logger.module';
 import { SessionModule } from '../sessions/session.module';
 import { MagentoModule } from '../magento/magento.module';
 import { AuthController } from './auth.controller';
@@ -11,6 +12,7 @@ import { AccessTokenStrategy } from './strategies/access-token.strategy';
 @Module({
   imports: [
     ConfigModule,
+    LoggerModule,
     SessionModule,
     MagentoModule,
     JwtModule.registerAsync({
