@@ -1,0 +1,78 @@
+components:
+  schemas:
+    Money:
+      type: object
+      required:
+        - amount
+        - currencyCode
+        - formatted
+      properties:
+        amount:
+          type: number
+          format: double
+        currencyCode:
+          type: string
+        formatted:
+          type: string
+    Image:
+      type: object
+      required:
+        - url
+      properties:
+        url:
+          type: string
+          format: uri
+        alt:
+          type: string
+          nullable: true
+    ErrorResponse:
+      type: object
+      required:
+        - type
+        - title
+        - status
+        - detail
+        - instance
+        - code
+        - request_id
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        code:
+          type: string
+        request_id:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+    PaginationMeta:
+      type: object
+      required:
+        - page
+        - pageSize
+        - totalItems
+        - totalPages
+      properties:
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalItems:
+          type: integer
+        totalPages:
+          type: integer
