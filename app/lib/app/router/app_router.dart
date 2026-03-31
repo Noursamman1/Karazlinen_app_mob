@@ -10,6 +10,8 @@ import 'package:karaz_linen_app/features/account/presentation/pages/account_over
 import 'package:karaz_linen_app/features/address_book/presentation/pages/address_book_page.dart';
 import 'package:karaz_linen_app/features/address_book/presentation/pages/address_form_page.dart';
 import 'package:karaz_linen_app/features/catalog/presentation/pages/catalog_page.dart';
+import 'package:karaz_linen_app/features/cart/presentation/pages/cart_page.dart';
+import 'package:karaz_linen_app/features/checkout/presentation/pages/checkout_page.dart';
 import 'package:karaz_linen_app/features/orders/presentation/pages/order_details_page.dart';
 import 'package:karaz_linen_app/features/orders/presentation/pages/orders_list_page.dart';
 import 'package:karaz_linen_app/features/product/presentation/pages/product_details_page.dart';
@@ -46,6 +48,16 @@ class AppRouter {
               builder: (_, __) => const SearchPage(),
             ),
             GoRoute(
+              path: '/cart',
+              name: 'cart',
+              builder: (_, __) => const CartPage(),
+            ),
+            GoRoute(
+              path: '/checkout',
+              name: 'checkout',
+              builder: (_, __) => const CheckoutPage(),
+            ),
+            GoRoute(
               path: '/account',
               name: 'account',
               builder: (_, __) => const AccountOverviewPage(),
@@ -74,7 +86,9 @@ class AppRouter {
             ),
           ],
           redirect: (_, GoRouterState state) {
-            final bool isProtected = state.fullPath?.startsWith('/account') ?? false;
+            final bool isProtected = (state.fullPath?.startsWith('/account') ?? false) ||
+                state.fullPath == '/cart' ||
+                state.fullPath == '/checkout';
             final bool isAuthPage = state.fullPath == '/auth-required';
             if (isProtected && !sessionState.isAuthenticated) {
               return '/auth-required';

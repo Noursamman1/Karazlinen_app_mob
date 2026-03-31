@@ -13,6 +13,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 import { SessionModule } from './modules/sessions/session.module';
 import { MagentoModule } from './modules/magento/magento.module';
+import { CartModule } from './modules/cart/cart.module';
+import { CheckoutModule } from './modules/checkout/checkout.module';
 
 @Module({
   imports: [
@@ -24,7 +26,9 @@ import { MagentoModule } from './modules/magento/magento.module';
     SessionModule,
     MagentoModule,
     HealthModule,
-    AuthModule
+    AuthModule,
+    CartModule,
+    CheckoutModule
   ],
   providers: [
     { provide: APP_FILTER, useClass: ProblemDetailsFilter },

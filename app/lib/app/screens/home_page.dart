@@ -45,6 +45,10 @@ class HomePage extends StatelessWidget {
                   onPressed: () => context.go('/account'),
                   child: Text(l10n.account),
                 ),
+                OutlinedButton(
+                  onPressed: () => context.go('/cart'),
+                  child: const Text('السلة'),
+                ),
               ],
             ),
           ],

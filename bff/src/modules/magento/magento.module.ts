@@ -7,6 +7,8 @@ import { CustomerAuthPort } from './ports/customer-auth.port';
 import { CatalogReadPort } from './ports/catalog-read.port';
 import { OrderReadPort } from './ports/order-read.port';
 import { SearchPort } from '../search/search.port';
+import { CartPort } from './ports/cart.port';
+import { CheckoutPort } from './ports/checkout.port';
 
 @Module({
   imports: [LoggerModule],
@@ -15,9 +17,11 @@ import { SearchPort } from '../search/search.port';
     MagentoClient,
     { provide: CustomerAuthPort, useExisting: MagentoClient },
     { provide: CatalogReadPort, useExisting: MagentoClient },
+    { provide: CartPort, useExisting: MagentoClient },
+    { provide: CheckoutPort, useExisting: MagentoClient },
     { provide: OrderReadPort, useExisting: MagentoClient },
     { provide: SearchPort, useExisting: MagentoClient }
   ],
-  exports: [MagentoConfig, CustomerAuthPort, CatalogReadPort, OrderReadPort, SearchPort]
+  exports: [MagentoConfig, CustomerAuthPort, CatalogReadPort, CartPort, CheckoutPort, OrderReadPort, SearchPort]
 })
 export class MagentoModule {}

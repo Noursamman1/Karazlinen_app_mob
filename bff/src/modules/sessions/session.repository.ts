@@ -8,6 +8,7 @@ export interface SessionRecord {
   refreshTokenHash: string;
   customerEmail?: string;
   magentoCustomerToken?: string;
+  magentoCartId?: string;
   deviceId?: string;
   refreshExpiresAt: string;
   createdAt: string;
@@ -124,6 +125,23 @@ export class SessionRepository implements OnModuleDestroy {
     const record = JSON.parse(raw) as SessionRecord;
     const touched: SessionRecord = { ...record, lastSeenAt: new Date().toISOString() };
     await this.redis.set(this.sessionKey(sessionId), JSON.stringify(touched), 'EX', this.ttlSeconds(record.refreshExpiresAt));
+  }
+
+  async updateSession(sessionId: string, patch: Partial<SessionRecord>): Promise<SessionRecord | null> {
+    await this.redis.connect().catch(() => undefined);
+    const raw = await this.redis.get(this.sessionKey(sessionId));
+    if (!raw) {
+      return null;
+    }
+
+    const current = JSON.parse(raw) as SessionRecord;
+    const next: SessionRecord = {
+      ...current,
+      ...patch
+    };
+
+    await this.redis.set(this.sessionKey(sessionId), JSON.stringify(next), 'EX', this.ttlSeconds(current.refreshExpiresAt));
+    return next;
   }
 
   async incrementRateLimit(key: string, ttlSeconds: number): Promise<number> {

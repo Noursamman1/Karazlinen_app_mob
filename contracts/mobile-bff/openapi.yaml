@@ -281,6 +281,191 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrderDetail'
+  /v1/cart:
+    get:
+      summary: Fetch the authenticated customer's active mobile cart
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Cart snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+  /v1/cart/items:
+    post:
+      summary: Add an item to the active cart
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartItemInput'
+      responses:
+        '200':
+          description: Updated cart snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+  /v1/cart/items/{itemId}:
+    patch:
+      summary: Update quantity for a cart item
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartItemQuantityInput'
+      responses:
+        '200':
+          description: Updated cart snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+    delete:
+      summary: Remove an item from the active cart
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: itemId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Updated cart snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+  /v1/cart/addresses:
+    put:
+      summary: Assign shipping and billing addresses for checkout
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartAddressAssignmentInput'
+      responses:
+        '200':
+          description: Updated cart snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+  /v1/cart/shipping-methods:
+    get:
+      summary: List available shipping methods for the current cart state
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Available shipping methods
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ShippingMethod'
+  /v1/cart/shipping-method:
+    put:
+      summary: Select the shipping method for the active cart
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectedShippingMethodInput'
+      responses:
+        '200':
+          description: Updated cart snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+  /v1/cart/payment-methods:
+    get:
+      summary: List available payment methods for the current cart state
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Available payment methods
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PaymentMethod'
+  /v1/cart/payment-method:
+    put:
+      summary: Select the payment method for the active cart
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectedPaymentMethodInput'
+      responses:
+        '200':
+          description: Updated cart snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+  /v1/checkout/place-order:
+    post:
+      summary: Place the current order from the authenticated cart
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: header
+          name: X-Idempotency-Key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceOrderInput'
+      responses:
+        '201':
+          description: Order placed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlaceOrderResult'
 components:
   securitySchemes:
     bearerAuth:
@@ -567,3 +752,191 @@ components:
                     type: integer
                   total:
                     $ref: './schemas/common.yaml#/components/schemas/Money'
+    Cart:
+      type: object
+      required: [id, currencyCode, itemCount, items, totals, checkout]
+      properties:
+        id:
+          type: string
+        currencyCode:
+          type: string
+        itemCount:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+        totals:
+          $ref: '#/components/schemas/CartTotals'
+        shippingAddress:
+          $ref: '#/components/schemas/Address'
+        billingAddress:
+          $ref: '#/components/schemas/Address'
+        selectedShippingMethod:
+          $ref: '#/components/schemas/ShippingMethod'
+        selectedPaymentMethod:
+          $ref: '#/components/schemas/PaymentMethod'
+        checkout:
+          $ref: '#/components/schemas/CheckoutState'
+    CartItem:
+      type: object
+      required: [itemId, productId, sku, name, quantity, unitPrice, lineTotal]
+      properties:
+        itemId:
+          type: string
+        productId:
+          type: string
+        sku:
+          type: string
+        name:
+          type: string
+        thumbnail:
+          $ref: './schemas/common.yaml#/components/schemas/Image'
+        quantity:
+          type: integer
+        selectedOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SelectedOption'
+        unitPrice:
+          $ref: './schemas/common.yaml#/components/schemas/Money'
+        lineTotal:
+          $ref: './schemas/common.yaml#/components/schemas/Money'
+    SelectedOption:
+      type: object
+      required: [code, label, value]
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        value:
+          type: string
+    CartTotals:
+      type: object
+      required: [subtotal, grandTotal]
+      properties:
+        subtotal:
+          $ref: './schemas/common.yaml#/components/schemas/Money'
+        shipping:
+          $ref: './schemas/common.yaml#/components/schemas/Money'
+        tax:
+          $ref: './schemas/common.yaml#/components/schemas/Money'
+        discount:
+          $ref: './schemas/common.yaml#/components/schemas/Money'
+        grandTotal:
+          $ref: './schemas/common.yaml#/components/schemas/Money'
+    CheckoutState:
+      type: object
+      required: [ready, blockers]
+      properties:
+        ready:
+          type: boolean
+        blockers:
+          type: array
+          items:
+            $ref: '#/components/schemas/CheckoutBlocker'
+    CheckoutBlocker:
+      type: string
+      enum:
+        - cart_empty
+        - shipping_address_missing
+        - billing_address_missing
+        - shipping_method_missing
+        - payment_method_missing
+    ShippingMethod:
+      type: object
+      required: [carrierCode, methodCode, label, amount, selected]
+      properties:
+        carrierCode:
+          type: string
+        methodCode:
+          type: string
+        label:
+          type: string
+        detail:
+          type: string
+          nullable: true
+        amount:
+          $ref: './schemas/common.yaml#/components/schemas/Money'
+        selected:
+          type: boolean
+    PaymentMethod:
+      type: object
+      required: [code, label, selected]
+      properties:
+        code:
+          type: string
+        label:
+          type: string
+        detail:
+          type: string
+          nullable: true
+        selected:
+          type: boolean
+    CartItemInput:
+      type: object
+      required: [sku, quantity]
+      properties:
+        sku:
+          type: string
+        quantity:
+          type: integer
+          minimum: 1
+        selectedOptions:
+          type: object
+          additionalProperties:
+            type: string
+    CartItemQuantityInput:
+      type: object
+      required: [quantity]
+      properties:
+        quantity:
+          type: integer
+          minimum: 1
+    CartAddressAssignmentInput:
+      type: object
+      required: [sameAsShipping]
+      properties:
+        shippingAddressId:
+          type: string
+        shippingAddress:
+          $ref: '#/components/schemas/AddressInput'
+        billingAddressId:
+          type: string
+        billingAddress:
+          $ref: '#/components/schemas/AddressInput'
+        sameAsShipping:
+          type: boolean
+    SelectedShippingMethodInput:
+      type: object
+      required: [carrierCode, methodCode]
+      properties:
+        carrierCode:
+          type: string
+        methodCode:
+          type: string
+    SelectedPaymentMethodInput:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+    PlaceOrderInput:
+      type: object
+      required: [termsAccepted]
+      properties:
+        termsAccepted:
+          type: boolean
+        customerNote:
+          type: string
+          nullable: true
+    PlaceOrderResult:
+      type: object
+      required: [orderNumber, status]
+      properties:
+        orderNumber:
+          type: string
+        status:
+          type: string
+          enum: [placed]

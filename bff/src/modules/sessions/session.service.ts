@@ -3,11 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { randomBytes, randomUUID } from 'crypto';
 
 import { SessionRecord, SessionRepository } from './session.repository';
+import { MagentoSessionContext } from './session.types';
 
 type CreateSessionOptions = {
   deviceId?: string;
   customerEmail?: string;
   magentoCustomerToken?: string;
+  magentoCartId?: string;
 };
 
 @Injectable()
@@ -44,7 +46,8 @@ export class SessionService {
       createdAt: new Date().toISOString(),
       deviceId,
       customerEmail: options.customerEmail,
-      magentoCustomerToken: options.magentoCustomerToken
+      magentoCustomerToken: options.magentoCustomerToken,
+      magentoCartId: options.magentoCartId
     });
     return { sessionId, refreshToken };
   }
@@ -82,7 +85,8 @@ export class SessionService {
     const replacement = await this.createSession(existing.customerId, refreshTtlDays, {
       deviceId: existing.deviceId,
       customerEmail: existing.customerEmail,
-      magentoCustomerToken: existing.magentoCustomerToken
+      magentoCustomerToken: existing.magentoCustomerToken,
+      magentoCartId: existing.magentoCartId
     });
     return {
       session: { ...existing, sessionId: replacement.sessionId },
@@ -114,6 +118,50 @@ export class SessionService {
       });
     }
     await this.repository.revokeSessionWithReason(sessionId, 'customer_logout');
+  }
+
+  async getMagentoSessionContext(customerId: string, sessionId: string): Promise<MagentoSessionContext> {
+    const session = await this.findActiveSession(sessionId);
+    if (session.customerId !== customerId) {
+      throw new UnauthorizedException({
+        message: 'Session does not belong to this customer',
+        code: 'AUTH_SESSION_EXPIRED'
+      });
+    }
+    if (!session.magentoCustomerToken) {
+      throw new UnauthorizedException({
+        message: 'Session is missing Magento context',
+        code: 'AUTH_SESSION_EXPIRED'
+      });
+    }
+
+    return {
+      sessionId: session.sessionId,
+      customerId: session.customerId,
+      customerEmail: session.customerEmail,
+      magentoCustomerToken: session.magentoCustomerToken,
+      magentoCartId: session.magentoCartId
+    };
+  }
+
+  async updateMagentoCartId(customerId: string, sessionId: string, magentoCartId?: string): Promise<SessionRecord> {
+    const session = await this.findActiveSession(sessionId);
+    if (session.customerId !== customerId) {
+      throw new UnauthorizedException({
+        message: 'Session does not belong to this customer',
+        code: 'AUTH_SESSION_EXPIRED'
+      });
+    }
+
+    const updated = await this.repository.updateSession(sessionId, { magentoCartId });
+    if (!updated) {
+      throw new UnauthorizedException({
+        message: 'Session is invalid or expired',
+        code: 'AUTH_SESSION_EXPIRED'
+      });
+    }
+
+    return updated;
   }
 
   private async enforceCustomerSessionCap(customerId: string): Promise<void> {

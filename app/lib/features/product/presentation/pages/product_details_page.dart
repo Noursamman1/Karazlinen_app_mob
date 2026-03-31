@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:karaz_linen_app/core/models/commerce_models.dart';
 import 'package:karaz_linen_app/core/presentation/async_feedback.dart';
 import 'package:karaz_linen_app/design_system/theme/app_colors.dart';
 import 'package:karaz_linen_app/design_system/theme/app_spacing.dart';
 import 'package:karaz_linen_app/design_system/widgets/section_card.dart';
+import 'package:karaz_linen_app/features/cart/application/cart_controller.dart';
 import 'package:karaz_linen_app/features/product/application/product_controller.dart';
 import 'package:karaz_linen_app/features/product/domain/product_selection.dart';
 import 'package:karaz_linen_app/features/product/presentation/widgets/configurable_option_section.dart';
@@ -25,15 +27,32 @@ class ProductDetailsPage extends ConsumerWidget {
     final AsyncValue<ProductSelectionSummary> selectionSummaryAsync = ref.watch(
       productSelectionSummaryProvider(productId),
     );
+    final int cartItemCount = ref.watch(cartItemCountProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('تفاصيل المنتج')),
+      appBar: AppBar(
+        title: const Text('تفاصيل المنتج'),
+        actions: <Widget>[
+          IconButton(
+            tooltip: 'السلة',
+            onPressed: () => context.push('/cart'),
+            icon: Badge(
+              isLabelVisible: cartItemCount > 0,
+              label: Text(cartItemCount.toString()),
+              child: const Icon(Icons.shopping_bag_outlined),
+            ),
+          ),
+        ],
+      ),
       body: product.when(
         data: (ProductDetailView detail) {
           final ProductSelectionSummary selectionSummary = selectionSummaryAsync.maybeWhen(
             data: (ProductSelectionSummary summary) => summary,
             orElse: () => ProductSelectionSummary.fromProduct(detail, selected),
           );
+          final bool canAddToCart = detail.configurableOptions.isEmpty
+              ? selectionSummary.isPurchasable
+              : selectionSummary.isResolved && selectionSummary.isPurchasable;
 
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.lg),
@@ -84,24 +103,43 @@ class ProductDetailsPage extends ConsumerWidget {
               _VariantPreviewCard(summary: selectionSummary),
               const SizedBox(height: AppSpacing.lg),
               FilledButton(
-                onPressed: selectionSummary.isResolved && selectionSummary.isPurchasable
-                    ? () {
+                onPressed: canAddToCart
+                    ? () async {
+                        final CartActionResult result = await ref.read(cartActionsProvider).addFromProductSelection(
+                              productId: detail.id,
+                              fallbackSku: detail.sku,
+                              name: detail.name,
+                              quantity: 1,
+                              selection: selectionSummary,
+                            );
+
+                        if (!context.mounted) {
+                          return;
+                        }
+
+                        if (result.needsAuth) {
+                          context.go('/auth-required');
+                          return;
+                        }
+
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(
-                              selectionSummary.isResolved
-                                  ? 'تم اعتماد النسخة ${selectionSummary.previewSku} كاختيار نهائي مطابق للعقد.'
-                                  : 'تم حفظ الاختيار، لكن ما زالت هناك حاجة لمراجعة بيانات الـBFF لهذه النسخة.',
-                            ),
+                            content: Text(result.message),
+                            action: result.isSuccess
+                                ? SnackBarAction(
+                                    label: 'عرض السلة',
+                                    onPressed: () => context.push('/cart'),
+                                  )
+                                : null,
                           ),
                         );
                       }
                     : null,
                 child: Text(
-                  selectionSummary.isResolved && selectionSummary.isPurchasable
-                      ? 'اعتماد النسخة المختارة'
+                  canAddToCart
+                      ? 'إضافة إلى السلة'
                       : selectionSummary.allRequiredSelected
-                          ? 'تعذر اعتماد النسخة الحالية'
+                          ? 'تعذر إضافة النسخة الحالية'
                           : 'اختاري الخيارات المطلوبة أولاً',
                 ),
               ),

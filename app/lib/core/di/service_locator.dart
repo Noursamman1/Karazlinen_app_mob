@@ -6,6 +6,7 @@ import 'package:karaz_linen_app/core/models/customer_models.dart';
 import 'package:karaz_linen_app/core/network/http_client.dart';
 import 'package:karaz_linen_app/core/repositories/account_repository.dart';
 import 'package:karaz_linen_app/core/repositories/catalog_repository.dart';
+import 'package:karaz_linen_app/core/repositories/cart_repository.dart';
 import 'package:karaz_linen_app/core/session/session_controller.dart';
 import 'package:karaz_linen_app/core/session/session_state.dart';
 
@@ -30,6 +31,10 @@ final Provider<CatalogRepository> catalogRepositoryProvider = Provider<CatalogRe
 
 final Provider<AccountRepository> accountRepositoryProvider = Provider<AccountRepository>((ProviderRef<AccountRepository> ref) {
   return const DemoAccountRepository();
+});
+
+final Provider<CartRepository> cartRepositoryProvider = Provider<CartRepository>((ProviderRef<CartRepository> ref) {
+  return DemoCartRepository();
 });
 
 final StateNotifierProvider<SessionController, SessionState> sessionControllerProvider =

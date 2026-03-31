@@ -11,6 +11,7 @@ import 'package:karaz_linen_app/features/catalog/application/catalog_controller.
 import 'package:karaz_linen_app/features/catalog/domain/catalog_query.dart';
 import 'package:karaz_linen_app/features/catalog/domain/catalog_result.dart';
 import 'package:karaz_linen_app/features/catalog/domain/catalog_state.dart';
+import 'package:karaz_linen_app/features/cart/application/cart_controller.dart';
 import 'package:karaz_linen_app/features/catalog/presentation/widgets/category_strip.dart';
 import 'package:karaz_linen_app/features/catalog/presentation/widgets/product_card.dart';
 
@@ -23,6 +24,7 @@ class CatalogPage extends ConsumerWidget {
     final AsyncValue<CatalogProductListing> listing = ref.watch(catalogListingProvider);
     final CatalogFilterState filters = ref.watch(catalogFilterProvider);
     final int activeFilterCount = ref.watch(catalogActiveFilterCountProvider);
+    final int cartItemCount = ref.watch(cartItemCountProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -32,6 +34,15 @@ class CatalogPage extends ConsumerWidget {
             tooltip: 'البحث',
             onPressed: () => context.push('/search'),
             icon: const Icon(Icons.search),
+          ),
+          IconButton(
+            tooltip: 'السلة',
+            onPressed: () => context.push('/cart'),
+            icon: Badge(
+              isLabelVisible: cartItemCount > 0,
+              label: Text(cartItemCount.toString()),
+              child: const Icon(Icons.shopping_bag_outlined),
+            ),
           ),
         ],
       ),

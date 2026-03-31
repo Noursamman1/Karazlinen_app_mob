@@ -79,4 +79,51 @@ describe('SessionService', () => {
     );
     expect(repository.revokeSessionWithReason).toHaveBeenCalledWith('sid-1', 'device_mismatch');
   });
+
+  it('preserves Magento cart context when rotating refresh tokens', async () => {
+    const repository = {
+      findByRefreshToken: jest.fn().mockResolvedValue({
+        sessionId: 'sid-1',
+        customerId: 'cust-1',
+        deviceId: 'device-12345',
+        customerEmail: 'customer@example.com',
+        magentoCustomerToken: 'magento-token',
+        magentoCartId: 'cart-1',
+        refreshTokenHash: 'hash-1',
+        refreshExpiresAt: new Date(Date.now() + 60_000).toISOString(),
+        createdAt: new Date().toISOString()
+      }),
+      revokeSessionWithReason: jest.fn().mockResolvedValue(undefined),
+      hashRefreshToken: jest.fn().mockReturnValue('hash-2'),
+      save: jest.fn().mockResolvedValue(undefined),
+      findCurrentSessionForCustomerDevice: jest.fn().mockResolvedValue(null),
+      findSessionsByCustomer: jest.fn().mockResolvedValue([])
+    };
+
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        SessionService,
+        { provide: SessionRepository, useValue: repository },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((key: string, defaultValue: number) => defaultValue)
+          }
+        }
+      ]
+    }).compile();
+
+    const service = moduleRef.get(SessionService);
+    await service.rotateRefreshToken('a'.repeat(96), 30, 'device-12345');
+
+    expect(repository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        customerId: 'cust-1',
+        deviceId: 'device-12345',
+        customerEmail: 'customer@example.com',
+        magentoCustomerToken: 'magento-token',
+        magentoCartId: 'cart-1'
+      })
+    );
+  });
 });

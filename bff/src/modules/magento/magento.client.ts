@@ -11,6 +11,19 @@ import { CatalogReadPort } from './ports/catalog-read.port';
 import { OrderReadPort } from './ports/order-read.port';
 import { SearchPort } from '../search/search.port';
 import { MagentoConfig } from './magento.config';
+import {
+  AddCartItemCommand,
+  AssignCartAddressesCommand,
+  CartPort,
+  MagentoCart,
+  MagentoCartSessionContext,
+  MagentoPaymentMethod,
+  MagentoShippingMethod,
+  SelectPaymentMethodCommand,
+  SelectShippingMethodCommand,
+  UpdateCartItemQuantityCommand
+} from './ports/cart.port';
+import { CheckoutPort, PlaceOrderCommand, PlaceOrderResult } from './ports/checkout.port';
 
 type MagentoGraphQlError = {
   message?: string;
@@ -32,7 +45,7 @@ type MagentoCustomerResponse = {
 };
 
 @Injectable()
-export class MagentoClient implements CustomerAuthPort, CatalogReadPort, OrderReadPort, SearchPort {
+export class MagentoClient implements CustomerAuthPort, CatalogReadPort, CartPort, CheckoutPort, OrderReadPort, SearchPort {
   private consecutiveFailures = 0;
   private circuitOpenedAt?: number;
 
@@ -76,6 +89,50 @@ export class MagentoClient implements CustomerAuthPort, CatalogReadPort, OrderRe
 
   providerName(): string {
     return 'magento';
+  }
+
+  async getOrCreateCart(_: MagentoCartSessionContext): Promise<MagentoCart> {
+    throw this.upstreamUnavailable('Magento cart orchestration is defined but not wired in this phase');
+  }
+
+  async addItem(_: MagentoCartSessionContext, __: AddCartItemCommand): Promise<MagentoCart> {
+    throw this.upstreamUnavailable('Magento cart orchestration is defined but not wired in this phase');
+  }
+
+  async updateItemQuantity(
+    _: MagentoCartSessionContext,
+    __: string,
+    ___: UpdateCartItemQuantityCommand
+  ): Promise<MagentoCart> {
+    throw this.upstreamUnavailable('Magento cart orchestration is defined but not wired in this phase');
+  }
+
+  async removeItem(_: MagentoCartSessionContext, __: string): Promise<MagentoCart> {
+    throw this.upstreamUnavailable('Magento cart orchestration is defined but not wired in this phase');
+  }
+
+  async assignAddresses(_: MagentoCartSessionContext, __: AssignCartAddressesCommand): Promise<MagentoCart> {
+    throw this.upstreamUnavailable('Magento cart orchestration is defined but not wired in this phase');
+  }
+
+  async listShippingMethods(_: MagentoCartSessionContext): Promise<MagentoShippingMethod[]> {
+    throw this.upstreamUnavailable('Magento shipping method orchestration is defined but not wired in this phase');
+  }
+
+  async selectShippingMethod(_: MagentoCartSessionContext, __: SelectShippingMethodCommand): Promise<MagentoCart> {
+    throw this.upstreamUnavailable('Magento shipping method orchestration is defined but not wired in this phase');
+  }
+
+  async listPaymentMethods(_: MagentoCartSessionContext): Promise<MagentoPaymentMethod[]> {
+    throw this.upstreamUnavailable('Magento payment method orchestration is defined but not wired in this phase');
+  }
+
+  async selectPaymentMethod(_: MagentoCartSessionContext, __: SelectPaymentMethodCommand): Promise<MagentoCart> {
+    throw this.upstreamUnavailable('Magento payment method orchestration is defined but not wired in this phase');
+  }
+
+  async placeOrder(_: MagentoCartSessionContext, __: PlaceOrderCommand): Promise<PlaceOrderResult> {
+    throw this.upstreamUnavailable('Magento place-order orchestration is defined but not wired in this phase');
   }
 
   private async fetchCustomerToken(email: string, password: string): Promise<string> {
